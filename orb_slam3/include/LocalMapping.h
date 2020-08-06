@@ -1,14 +1,19 @@
 /**
 * This file is part of ORB-SLAM3
 *
-* Copyright (C) 2017-2020 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
+* Copyright (C) 2017-2020 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José
+* M.M. Montiel and Juan D. Tardós, University of Zaragoza.
+* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University
+* of Zaragoza.
 *
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
+* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of
+* the GNU General Public
+* License as published by the Free Software Foundation, either version 3 of the License,
+* or
 * (at your option) any later version.
 *
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+* without even
 * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
@@ -32,7 +37,6 @@
 
 namespace ORB_SLAM3
 {
-
 class System;
 class Tracking;
 class LoopClosing;
@@ -41,145 +45,147 @@ class Atlas;
 class LocalMapping
 {
 public:
-    LocalMapping(System* pSys, Atlas* pAtlas, const float bMonocular, bool bInertial, const string &_strSeqName=std::string());
+  LocalMapping(System* pSys, Atlas* pAtlas, const float bMonocular, bool bInertial,
+               const string& _strSeqName = std::string());
 
-    void SetLoopCloser(LoopClosing* pLoopCloser);
+  void SetLoopCloser(LoopClosing* pLoopCloser);
 
-    void SetTracker(Tracking* pTracker);
+  void SetTracker(Tracking* pTracker);
 
-    // Main function
-    void Run();
+  // Main function
+  void Run();
 
-    void InsertKeyFrame(KeyFrame* pKF);
-    void EmptyQueue();
+  void InsertKeyFrame(KeyFrame* pKF);
+  void EmptyQueue();
 
-    // Thread Synch
-    void RequestStop();
-    void RequestReset();
-    void RequestResetActiveMap(Map* pMap);
-    bool Stop();
-    void Release();
-    bool isStopped();
-    bool stopRequested();
-    bool AcceptKeyFrames();
-    void SetAcceptKeyFrames(bool flag);
-    bool SetNotStop(bool flag);
+  // Thread Synch
+  void RequestStop();
+  void RequestReset();
+  void RequestResetActiveMap(Map* pMap);
+  bool Stop();
+  void Release();
+  bool isStopped();
+  bool stopRequested();
+  bool AcceptKeyFrames();
+  void SetAcceptKeyFrames(bool flag);
+  bool SetNotStop(bool flag);
 
-    void InterruptBA();
+  void InterruptBA();
 
-    void RequestFinish();
-    bool isFinished();
+  void RequestFinish();
+  bool isFinished();
 
-    int KeyframesInQueue(){
-        unique_lock<std::mutex> lock(mMutexNewKFs);
-        return mlNewKeyFrames.size();
-    }
+  int KeyframesInQueue()
+  {
+    unique_lock<std::mutex> lock(mMutexNewKFs);
+    return mlNewKeyFrames.size();
+  }
 
-    bool IsInitializing();
-    double GetCurrKFTime();
-    KeyFrame* GetCurrKF();
+  bool IsInitializing();
+  double GetCurrKFTime();
+  KeyFrame* GetCurrKF();
 
-    std::mutex mMutexImuInit;
+  std::mutex mMutexImuInit;
 
-    Eigen::MatrixXd mcovInertial;
-    Eigen::Matrix3d mRwg;
-    Eigen::Vector3d mbg;
-    Eigen::Vector3d mba;
-    double mScale;
-    double mInitTime;
-    double mCostTime;
-    bool mbNewInit;
-    unsigned int mInitSect;
-    unsigned int mIdxInit;
-    unsigned int mnKFs;
-    double mFirstTs;
-    int mnMatchesInliers;
+  Eigen::MatrixXd mcovInertial;
+  Eigen::Matrix3d mRwg;
+  Eigen::Vector3d mbg;
+  Eigen::Vector3d mba;
+  double mScale;
+  double mInitTime;
+  double mCostTime;
+  bool mbNewInit;
+  unsigned int mInitSect;
+  unsigned int mIdxInit;
+  unsigned int mnKFs;
+  double mFirstTs;
+  int mnMatchesInliers;
 
-    // For debugging (erase in normal mode)
-    int mInitFr;
-    int mIdxIteration;
-    string strSequence;
+  // For debugging (erase in normal mode)
+  int mInitFr;
+  int mIdxIteration;
+  string strSequence;
 
-    bool mbNotBA1;
-    bool mbNotBA2;
-    bool mbBadImu;
+  bool mbNotBA1;
+  bool mbNotBA2;
+  bool mbBadImu;
 
-    bool mbWriteStats;
+  bool mbWriteStats;
 
-    // not consider far points (clouds)
-    bool mbFarPoints;
-    float mThFarPoints;
+  // not consider far points (clouds)
+  bool mbFarPoints;
+  float mThFarPoints;
+
 protected:
+  bool CheckNewKeyFrames();
+  void ProcessNewKeyFrame();
+  void CreateNewMapPoints();
 
-    bool CheckNewKeyFrames();
-    void ProcessNewKeyFrame();
-    void CreateNewMapPoints();
+  void MapPointCulling();
+  void SearchInNeighbors();
+  void KeyFrameCulling();
 
-    void MapPointCulling();
-    void SearchInNeighbors();
-    void KeyFrameCulling();
+  cv::Mat ComputeF12(KeyFrame*& pKF1, KeyFrame*& pKF2);
 
-    cv::Mat ComputeF12(KeyFrame* &pKF1, KeyFrame* &pKF2);
+  cv::Mat SkewSymmetricMatrix(const cv::Mat& v);
 
-    cv::Mat SkewSymmetricMatrix(const cv::Mat &v);
+  System* mpSystem;
 
-    System *mpSystem;
+  bool mbMonocular;
+  bool mbInertial;
 
-    bool mbMonocular;
-    bool mbInertial;
+  void ResetIfRequested();
+  bool mbResetRequested;
+  bool mbResetRequestedActiveMap;
+  Map* mpMapToReset;
+  std::mutex mMutexReset;
 
-    void ResetIfRequested();
-    bool mbResetRequested;
-    bool mbResetRequestedActiveMap;
-    Map* mpMapToReset;
-    std::mutex mMutexReset;
+  bool CheckFinish();
+  void SetFinish();
+  bool mbFinishRequested;
+  bool mbFinished;
+  std::mutex mMutexFinish;
 
-    bool CheckFinish();
-    void SetFinish();
-    bool mbFinishRequested;
-    bool mbFinished;
-    std::mutex mMutexFinish;
+  Atlas* mpAtlas;
 
-    Atlas* mpAtlas;
+  LoopClosing* mpLoopCloser;
+  Tracking* mpTracker;
 
-    LoopClosing* mpLoopCloser;
-    Tracking* mpTracker;
+  std::list<KeyFrame*> mlNewKeyFrames;
 
-    std::list<KeyFrame*> mlNewKeyFrames;
+  KeyFrame* mpCurrentKeyFrame;
 
-    KeyFrame* mpCurrentKeyFrame;
+  std::list<MapPoint*> mlpRecentAddedMapPoints;
 
-    std::list<MapPoint*> mlpRecentAddedMapPoints;
+  std::mutex mMutexNewKFs;
 
-    std::mutex mMutexNewKFs;
+  bool mbAbortBA;
 
-    bool mbAbortBA;
+  bool mbStopped;
+  bool mbStopRequested;
+  bool mbNotStop;
+  std::mutex mMutexStop;
 
-    bool mbStopped;
-    bool mbStopRequested;
-    bool mbNotStop;
-    std::mutex mMutexStop;
+  bool mbAcceptKeyFrames;
+  std::mutex mMutexAccept;
 
-    bool mbAcceptKeyFrames;
-    std::mutex mMutexAccept;
+  void InitializeIMU(float priorG = 1e2, float priorA = 1e6, bool bFirst = false);
+  void ScaleRefinement();
 
-    void InitializeIMU(float priorG = 1e2, float priorA = 1e6, bool bFirst = false);
-    void ScaleRefinement();
+  bool bInitializing;
 
-    bool bInitializing;
+  Eigen::MatrixXd infoInertial;
+  int mNumLM;
+  int mNumKFCulling;
 
-    Eigen::MatrixXd infoInertial;
-    int mNumLM;
-    int mNumKFCulling;
+  float mTinit;
 
-    float mTinit;
+  int countRefinement;
 
-    int countRefinement;
-
-    //DEBUG
-    ofstream f_lm;
+  // DEBUG
+  ofstream f_lm;
 };
 
-} //namespace ORB_SLAM
+}  // namespace ORB_SLAM
 
-#endif // LOCALMAPPING_H
+#endif  // LOCALMAPPING_H
