@@ -7,8 +7,8 @@
     <param name="vocabulary_filename" type="string" value="$(find orb_slam3_ros)/orb_slam3/Vocabulary/ORBvoc.txt" />
     <param name="settings_filename" type="string" value="$(find orb_slam3_ros)/orb_slam3/Settings/realsense_d435.yaml" />
 
-    <remap from="image_left/image_color_rect" to="/camera/infra1/image_rect_raw" />
-    <remap from="image_right/image_color_rect" to="/camera/infra2/image_rect_raw" />
+    <remap from="image_left/image_color_rect" to="/torso_front_camera/infra1/image_rect_raw" />
+    <remap from="image_right/image_color_rect" to="/torso_front_camera/infra2/image_rect_raw" />
   </node>
 
 </launch>

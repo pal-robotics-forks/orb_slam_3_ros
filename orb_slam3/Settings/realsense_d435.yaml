@@ -1,5 +1,10 @@
 %YAML:1.0
 
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+Camera.type: "PinHole"
+
 # Camera calibration and distortion parameters (OpenCV)
 Camera.fx: 422.917510986
 Camera.fy: 422.917510986
@@ -11,6 +16,8 @@ Camera.k2: 0.0
 Camera.p1: 0.0
 Camera.p2: 0.0
 Camera.k3: 0.0
+
+Camera.bFishEye: 0
 
 Camera.width: 848
 Camera.height: 480
