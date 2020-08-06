@@ -49,24 +49,9 @@ else()
   set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif()
 
-set(LIBS_ORBSLAM
-  ${OpenCV_LIBS}
-  ${EIGEN3_LIBS}
-  ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
-  ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
-)
-
-set(LIBS_ROS
-  ${PROJECT_SOURCE_DIR}/orb_slam3/lib/lib${PROJECT_NAME}.so
-  ${OpenCV_LIBS}
-  ${catkin_LIBRARIES}
-)
-
 catkin_package(
-  INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/orb_slam3 ${PROJECT_SOURCE_DIR}/orb_slam3/include ${PROJECT_SOURCE_DIR}/ros/include
   LIBRARIES {PROJECT_NAME} libDBoW2 libg2o
   CATKIN_DEPENDS cv_bridge image_transport roscpp rospy sensor_msgs std_msgs tf2 tf2_geometry_msgs tf2_ros
-#  DEPENDS system_lib
 )
 
 include_directories(
@@ -81,10 +66,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/CMakeLists.txt)
-include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/CMakeLists.txt)
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
+add_subdirectory(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o)
+add_subdirectory(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2)
 
 add_library(${PROJECT_NAME} SHARED
 orb_slam3/src/CameraModels/KannalaBrandt8.cpp
@@ -114,4 +97,25 @@ orb_slam3/src/TwoViewReconstruction.cc
 )
 add_dependencies (${PROJECT_NAME} g2o DBoW2)
 
-target_link_libraries(${PROJECT_NAME} ${LIBS_ORBSLAM})
+target_link_libraries(${PROJECT_NAME}
+${OpenCV_LIBS}
+${EIGEN3_LIBS}
+${Pangolin_LIBRARIES}
+DBoW2
+g2o
+)
+
+add_library(wrappers_library SHARED
+  ros/src/wrappers/base_wrapper.cpp
+  ros/src/wrappers/stereo_wrapper.cpp
+)
+add_dependencies(wrappers_library ${PROJECT_NAME})
+target_link_libraries(wrappers_library
+  ${PROJECT_NAME})
+  
+add_executable(stereo_slam_node ros/src/nodes/stereo_slam_node.cpp)
+add_dependencies(stereo_slam_node wrappers_library)
+target_link_libraries(stereo_slam_node
+  wrappers_library
+  ${catkin_LIBRARIES})
+
