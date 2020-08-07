@@ -10,6 +10,8 @@ BaseWrapper::BaseWrapper(const ORB_SLAM3::System::eSensor &sensor, ros::NodeHand
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("vocabulary_filename", vocabulary_filename_, "");
   pnh.param<std::string>("settings_filename", settings_filename_, "");
+  pnh.param<std::string>("map_frame_name", map_frame_name_, "map");
+  pnh.param<std::string>("camera_frame_name", camera_frame_name_, "camera_link");
 
   // instantiate orb slam system
   system_ = std::make_shared<ORB_SLAM3::System>(vocabulary_filename_, settings_filename_, sensor);
@@ -23,9 +25,9 @@ BaseWrapper::BaseWrapper(const ORB_SLAM3::System::eSensor &sensor, ros::NodeHand
   // advertise map publisher
   map_publisher_ = nh_.advertise<sensor_msgs::PointCloud2>("/map_points", 1);
 
-  // init coordinate offset
-  coordinates_offset_.setIdentity();
-  coordinates_offset_.setBasis(tf2::Matrix3x3(0, 0, 1, -1, 0, 0, 0, -1, 0));
+  // init optical offset
+  optical_offset_.setIdentity();
+  optical_offset_.setBasis(tf2::Matrix3x3(0, 0, 1, -1, 0, 0, 0, -1, 0));
 }
 
 BaseWrapper::~BaseWrapper()
@@ -36,16 +38,17 @@ BaseWrapper::~BaseWrapper()
 void BaseWrapper::publishCameraPose(const cv::Mat &cv_mat)
 {
   // convert cv::Mat camera pose to tf2 Transform
-  tf2::Transform camera_tf = totfTransform(cv_mat).inverse();
+  tf2::Transform camera_tf = totfTransform(cv_mat);
 
-  // apply coordinate conversion
-  //  camera_tf = camera_tf*coordinates_offset_;
+  // apply conversion between camera and optical frame
+  camera_tf = optical_offset_ * camera_tf;
   camera_tf = camera_tf.inverse();
-  camera_tf = coordinates_offset_*camera_tf;
+  camera_tf = optical_offset_ * camera_tf;
 
+  // convert to pose msg
   geometry_msgs::PoseStamped pose_msg;
-  pose_msg.header.stamp = ros::Time::now();
-  pose_msg.header.frame_id = "map";
+  pose_msg.header.stamp = last_stamp_;
+  pose_msg.header.frame_id = map_frame_name_;
 
   pose_msg.pose.position.x = camera_tf.getOrigin().getX();
   pose_msg.pose.position.y = camera_tf.getOrigin().getY();
@@ -56,6 +59,7 @@ void BaseWrapper::publishCameraPose(const cv::Mat &cv_mat)
   pose_msg.pose.orientation.z = camera_tf.getRotation().getZ();
   pose_msg.pose.orientation.w = camera_tf.getRotation().getW();
 
+  // publish
   pose_publisher_.publish(pose_msg);
 }
 
@@ -65,15 +69,15 @@ void BaseWrapper::publishCameraTf(const cv::Mat &cv_mat)
   tf2::Transform camera_tf = totfTransform(cv_mat);
 
   // apply coordinate conversion
-  //  camera_tf = camera_tf*coordinates_offset_;
+  camera_tf = optical_offset_ * camera_tf;
   camera_tf = camera_tf.inverse();
-  camera_tf = coordinates_offset_*camera_tf;
+  camera_tf = optical_offset_ * camera_tf;
 
   // publish tf with broadcaster
   geometry_msgs::TransformStamped camera_to_map_transform;
-  camera_to_map_transform.header.stamp = ros::Time::now();
-  camera_to_map_transform.header.frame_id = "map";
-  camera_to_map_transform.child_frame_id = "camera_link";
+  camera_to_map_transform.header.stamp = last_stamp_;
+  camera_to_map_transform.header.frame_id = map_frame_name_;
+  camera_to_map_transform.child_frame_id = camera_frame_name_;
   tf2::convert(camera_tf, camera_to_map_transform.transform);
   tf_broadcaster_.sendTransform(camera_to_map_transform);
 }
@@ -81,8 +85,8 @@ void BaseWrapper::publishCameraTf(const cv::Mat &cv_mat)
 void BaseWrapper::publishCurrentFrame(const cv::Mat &frame)
 {
   std_msgs::Header header;
-  header.stamp = ros::Time::now();
-  header.frame_id = "map";
+  header.stamp = last_stamp_;
+  header.frame_id = map_frame_name_;
   image_publisher_.publish(cv_bridge::CvImage(header, "bgr8", frame).toImageMsg());
 }
 
@@ -94,11 +98,10 @@ void BaseWrapper::publishMap(std::vector<ORB_SLAM3::MapPoint *> map_points)
   }
 
   sensor_msgs::PointCloud2 cloud;
-
   const int num_channels = 3;  // x y z
 
-  cloud.header.stamp = ros::Time::now();
-  cloud.header.frame_id = "map";
+  cloud.header.stamp = last_stamp_;
+  cloud.header.frame_id = map_frame_name_;
   cloud.height = 1;
   cloud.width = map_points.size();
   cloud.is_bigendian = false;
@@ -125,9 +128,9 @@ void BaseWrapper::publishMap(std::vector<ORB_SLAM3::MapPoint *> map_points)
   {
     if (map_points.at(i)->nObs >= min_observations_per_point_)
     {
-      data_array[0] = map_points.at(i)->GetWorldPos().at<float>(0);
-      data_array[1] = map_points.at(i)->GetWorldPos().at<float>(1);
-      data_array[2] = map_points.at(i)->GetWorldPos().at<float>(2);
+      data_array[0] = map_points.at(i)->GetWorldPos().at<float>(2);
+      data_array[1] = -1.0 * map_points.at(i)->GetWorldPos().at<float>(0);
+      data_array[2] = -1.0 * map_points.at(i)->GetWorldPos().at<float>(1);
 
       memcpy(cloud_data_ptr + (i * cloud.point_step), data_array, num_channels * sizeof(float));
     }

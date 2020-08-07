@@ -99,7 +99,12 @@ protected:
 
   // params
   double min_observations_per_point_ = 5;
-  tf2::Transform coordinates_offset_;
+  tf2::Transform optical_offset_;
+
+  // info for message headers
+  ros::Time last_stamp_;
+  std::string map_frame_name_;
+  std::string camera_frame_name_;
 
   // utility function for converting cv::Mat to tf2::Transform
   tf2::Transform totfTransform(const cv::Mat& cv_mat);

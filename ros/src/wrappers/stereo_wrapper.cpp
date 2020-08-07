@@ -50,6 +50,8 @@ void StereoWrapper::imageCallback(const sensor_msgs::Image::ConstPtr &left_msg,
     return;
   }
 
+  last_stamp_ = cv_ptrLeft->header.stamp;
+
   // publish estimated pose and tf
   publishCameraTf(camera_pose);
   publishCameraPose(camera_pose);
