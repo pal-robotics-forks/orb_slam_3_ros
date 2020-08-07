@@ -35,6 +35,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "Tracking.h"
+#include "FrameDrawer.h"
 #include "Atlas.h"
 #include "LocalMapping.h"
 #include "LoopClosing.h"
@@ -72,6 +73,7 @@ public:
   }
 };
 
+class FrameDrawer;
 class Atlas;
 class Tracking;
 class LocalMapping;
@@ -187,6 +189,10 @@ public:
 
   // void SaveAtlas(int type);
 
+  cv::Mat DrawCurrentFrame();
+
+  std::vector<MapPoint*> GetAllMapPoints();
+
 private:
   // bool LoadAtlas(string filename, int type);
 
@@ -217,6 +223,8 @@ private:
   // performs
   // a pose graph optimization and full bundle adjustment (in a new thread) afterwards.
   LoopClosing *mpLoopCloser;
+
+  FrameDrawer *mpFrameDrawer;
 
   // System threads: Local Mapping, Loop Closing, Viewer.
   // The Tracking thread "lives" in the main execution thread that creates the System

@@ -47,8 +47,9 @@ using namespace std;
 
 namespace ORB_SLAM3
 {
-Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, Atlas* pAtlas, KeyFrameDatabase* pKFDB,
-                   const string& strSettingPath, const int sensor, const string& _nameSeq)
+Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
+                   Atlas* pAtlas, KeyFrameDatabase* pKFDB, const string& strSettingPath,
+                   const int sensor, const string& _nameSeq)
   : mState(NO_IMAGES_YET)
   , mSensor(sensor)
   , mTrackedFr(0)
@@ -60,6 +61,7 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, Atlas* pAtlas, KeyFrameDat
   , mpKeyFrameDB(pKFDB)
   , mpInitializer(static_cast<Initializer*>(NULL))
   , mpSystem(pSys)
+  , mpFrameDrawer(pFrameDrawer)
   , mpAtlas(pAtlas)
   , mnLastRelocFrameId(0)
   , time_recently_lost(5.0)
@@ -149,6 +151,7 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, Atlas* pAtlas, KeyFrameDat
 
       fSettings["Tlr"] >> mTlr;
       cout << "- mTlr: \n" << mTlr << endl;
+      mpFrameDrawer->both = true;
     }
   }
 
@@ -996,6 +999,8 @@ void Tracking::Track()
       MonocularInitialization();
     }
 
+    mpFrameDrawer->Update(this);
+
 
     if (mState != OK)  // If rightly initialized, mState=OK
     {
@@ -1297,6 +1302,10 @@ void Tracking::Track()
           mLastBias = mCurrentFrame.mImuBias;
       }
     }
+
+    // Update drawer
+    mpFrameDrawer->Update(this);
+
 
     if (bOK || mState == RECENTLY_LOST)
     {

@@ -63,6 +63,7 @@ include_directories(
 include_directories(
   SYSTEM
   ${EIGEN3_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -75,6 +76,7 @@ orb_slam3/src/CameraModels/Pinhole.cpp
 orb_slam3/src/Atlas.cc
 orb_slam3/src/Converter.cc
 orb_slam3/src/Frame.cc
+orb_slam3/src/FrameDrawer.cc
 orb_slam3/src/G2oTypes.cc
 orb_slam3/src/ImuTypes.cc
 orb_slam3/src/Initializer.cc
@@ -108,6 +110,7 @@ g2o
 add_library(wrappers_library SHARED
   ros/src/wrappers/base_wrapper.cpp
   ros/src/wrappers/stereo_wrapper.cpp
+  ros/src/wrappers/converter.cpp
 )
 add_dependencies(wrappers_library ${PROJECT_NAME})
 target_link_libraries(wrappers_library

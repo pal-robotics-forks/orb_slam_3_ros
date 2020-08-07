@@ -29,10 +29,10 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <opencv2/core/core.hpp>
 
+namespace orb_slam3_ros
+{
 class StereoWrapper : public BaseWrapper
 {
 public:
@@ -41,7 +41,8 @@ public:
    * @param sensor
    * @param nh
    */
-  StereoWrapper(const ORB_SLAM3::System::eSensor& sensor, ros::NodeHandle& nh);
+  StereoWrapper(const ORB_SLAM3::System::eSensor& sensor, ros::NodeHandle& nh,
+                image_transport::ImageTransport& it);
 
   /**
    * @brief imageCallback
@@ -57,3 +58,4 @@ private:
   message_filters::Subscriber<sensor_msgs::Image> right_sub_;
   message_filters::Synchronizer<sync_pol> sync_;
 };
+}

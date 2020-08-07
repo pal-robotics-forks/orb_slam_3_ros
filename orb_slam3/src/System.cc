@@ -177,10 +177,13 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
   if (mSensor == IMU_STEREO || mSensor == IMU_MONOCULAR)
     mpAtlas->SetInertialSensor();
 
+  mpFrameDrawer = new FrameDrawer(mpAtlas);
+
+
   // Initialize the Tracking thread
   //(it will live in the main thread of execution, the one that called this constructor)
   cout << "Seq. Name: " << strSequence << endl;
-  mpTracker = new Tracking(this, mpVocabulary, mpAtlas, mpKeyFrameDatabase,
+  mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpAtlas, mpKeyFrameDatabase,
                            strSettingsFile, mSensor, strSequence);
 
   // Initialize the Local Mapping thread and launch
@@ -961,6 +964,16 @@ void System::ChangeDataset()
   }
 
   mpTracker->NewDataset();
+}
+
+cv::Mat System::DrawCurrentFrame()
+{
+  return mpFrameDrawer->DrawFrame();
+}
+
+std::vector<MapPoint *> System::GetAllMapPoints()
+{
+  return mpAtlas->GetAllMapPoints();
 }
 
 /*void System::SaveAtlas(int type){
