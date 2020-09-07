@@ -110,6 +110,7 @@ g2o
 add_library(wrappers_library SHARED
   ros/src/wrappers/base_wrapper.cpp
   ros/src/wrappers/stereo_wrapper.cpp
+  ros/src/wrappers/stereo_inertial_wrapper.cpp
   ros/src/wrappers/converter.cpp
 )
 add_dependencies(wrappers_library ${PROJECT_NAME})
