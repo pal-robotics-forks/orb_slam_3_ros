@@ -166,6 +166,25 @@ void StereoInertialWrapper::synchronizeMessages(const ros::TimerEvent &)
 
   // track camera pose with ORB_SLAM3
   cv::Mat camera_pose = system_->TrackStereo(left_cv_ptr->image, right_cv_ptr->image,
-                                             left_img_stamp,imu_measurements);
+                                             left_img_stamp, imu_measurements);
+
+  // when track lost -> do nothing
+  if (camera_pose.empty())
+  {
+    return;
+  }
+
+  // store last stamp
+  last_stamp_ = left_img_buffer_.front()->header.stamp;
+
+  // publish estimated pose and tf
+  publishCameraTf(camera_pose);
+  publishCameraPose(camera_pose);
+
+  // publish current frame
+  publishCurrentFrame(system_->DrawCurrentFrame());
+
+  // publish feature map
+  publishMap(system_->GetAllMapPoints());
 }
 }

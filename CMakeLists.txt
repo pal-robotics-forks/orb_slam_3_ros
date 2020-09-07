@@ -123,3 +123,9 @@ target_link_libraries(stereo_slam_node
   wrappers_library
   ${catkin_LIBRARIES})
 
+add_executable(stereo_inertial_slam_node ros/src/nodes/stereo_inertial_slam_node.cpp)
+add_dependencies(stereo_inertial_slam_node wrappers_library)
+target_link_libraries(stereo_inertial_slam_node
+  wrappers_library
+  ${catkin_LIBRARIES})
+
