@@ -10,7 +10,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
-  StereoInertialWrapper wrapper(ORB_SLAM3::System::STEREO, nh, it);
+  StereoInertialWrapper wrapper(ORB_SLAM3::System::IMU_STEREO, nh, it);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();

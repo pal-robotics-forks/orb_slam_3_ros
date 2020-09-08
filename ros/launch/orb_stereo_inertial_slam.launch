@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    
+  <!-- launch node -->
+  <node pkg="orb_slam3_ros" type="stereo_inertial_slam_node" name="stereo_slam_node" output="screen">
+  
+    <param name="vocabulary_filename" type="string" value="$(find orb_slam3_ros)/orb_slam3/Vocabulary/ORBvoc.txt" />
+    <param name="settings_filename" type="string" value="$(find orb_slam3_ros)/orb_slam3/Settings/realsense_t265.yaml" />
+
+    <remap from="image_left/image_color_rect" to="/camera/fisheye1/image_raw" />
+    <remap from="image_right/image_color_rect" to="/camera/fisheye2/image_raw" />
+    <remap from="imu" to="/camera/imu" />
+  </node>
+
+</launch>
+

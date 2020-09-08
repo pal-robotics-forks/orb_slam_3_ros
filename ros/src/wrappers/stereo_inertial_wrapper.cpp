@@ -6,6 +6,7 @@ StereoInertialWrapper::StereoInertialWrapper(const ORB_SLAM3::System::eSensor &s
                                              ros::NodeHandle &nh,
                                              image_transport::ImageTransport &it)
   : BaseWrapper(sensor, nh, it)
+
 {
   left_img_sub_ = nh.subscribe("image_left/image_color_rect", 1,
                                &StereoInertialWrapper::grabLeftImage, this);
@@ -24,7 +25,7 @@ void StereoInertialWrapper::grabLeftImage(const sensor_msgs::Image::ConstPtr &ms
   boost::recursive_mutex::scoped_lock lock(left_lock_);
 
   // if not empty, remove oldest element
-  if (left_img_buffer_.empty())
+  if (!left_img_buffer_.empty())
   {
     left_img_buffer_.pop();
   }
@@ -39,7 +40,7 @@ void StereoInertialWrapper::grabRightImage(const sensor_msgs::Image::ConstPtr &m
   boost::recursive_mutex::scoped_lock lock(right_lock_);
 
   // if not empty, remove oldest element
-  if (right_img_buffer_.empty())
+  if (!right_img_buffer_.empty())
   {
     right_img_buffer_.pop();
   }

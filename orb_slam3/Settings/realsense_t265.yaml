@@ -40,6 +40,22 @@ Tlr: !!opencv-matrix
             -0.00897926,   0.99996,   -0.000298536,   -0.00005788,
             -0.00481739,  0.000255286,   0.999988,   -0.000126118597108871]
 
+# IMU noise
+IMU.NoiseGyro: 0.000401979  
+IMU.NoiseAcc: 0.001933059 
+IMU.GyroWalk: 0.000006222
+IMU.AccWalk: 0.000096022 
+IMU.Frequency: 60
+
+# Transformation from body-frame (imu) to left camera
+Tbc: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: f
+   data: [-0.999949, -0.00200032, 0.00992049, 0.0106999985873699, 
+          0.00198036, -0.999996, -0.00202148, 0.0,
+         0.0099245, -0.00200173, 0.999949, 0.0,
+          0.0, 0.0, 0.0, 1.0]
 
 # Camera frames per second
 Camera.fps: 30.0
